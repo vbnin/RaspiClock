@@ -58,8 +58,8 @@ class Clock(object):
         self.ntp_status.pack(padx=(130,0), side='right')
 
         # Creating the clock layout
-        self.clock = tk.Label(master=root, font = '"LCD AT&T Phone Time/Date" 170', fg=self.Color, bg='black')
-        self.clock.pack(padx=(10,10), pady=(120))
+        self.clock = tk.Label(master=root, font = '"LCD AT&T Phone Time/Date" 165', fg=self.Color, bg='black')
+        self.clock.pack(padx=(8,8), pady=(120))
 
         # Starting the tick loop
         self.Tick()
@@ -167,9 +167,9 @@ class Clock(object):
                 self.clock.pack(padx=(10,10), pady=(70))
         else:
             self.CurrentTime = time.strftime('%H:%M:%S')
-            if self.clock['font'] != '"LCD AT&T Phone Time/Date" 170':
-                self.clock.configure(font= '"LCD AT&T Phone Time/Date" 170')
-                self.clock.pack(padx=(10,10), pady=(120))
+            if self.clock['font'] != '"LCD AT&T Phone Time/Date" 165':
+                self.clock.configure(font= '"LCD AT&T Phone Time/Date" 165')
+                self.clock.pack(padx=(8,8), pady=(120))
         self.clock['text'] = self.CurrentTime
         self.clock.after(100, self.Tick)
 
