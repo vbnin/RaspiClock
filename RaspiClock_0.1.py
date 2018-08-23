@@ -14,6 +14,7 @@ import os
 import sys
 import subprocess
 import re
+import socket
 
 # Define config file location and name
 ConfigFile = os.path.join(sys.path[0], 'RaspiClock_config.ini')
@@ -45,17 +46,24 @@ class Clock(object):
                bd=1,
                 highlightbackground='black',
                  activebackground='gray').pack(side='left')
+
+        self.net_color='gray'
+        self.net_text='Statut Réseau : Inconnu'
+        self.net_status = tk.Label(button_frame, text=self.net_text, font='Helvetica 12 bold', fg=self.net_color, bg='black')
+        self.net_status.pack(padx=(30,0), side='right')
+
         self.ntp_color='gray'
-        self.ntp_text='Statut NTP : non vérifié'
+        self.ntp_text='Sync NTP : Inconnu'
         self.ntp_status = tk.Label(button_frame, text=self.ntp_text, font='Helvetica 12 bold', fg=self.ntp_color, bg='black')
         self.ntp_status.pack(padx=(80,0), side='right')
 
         # Creating the clock layout
-        self.clock = tk.Label(master=root, font = '"LCD AT&T Phone Time/Date" 140', fg=self.Color, bg='black')
-        self.clock.pack(padx=(20,20), pady=(120,100))
+        self.clock = tk.Label(master=root, font = '"LCD AT&T Phone Time/Date" 170', fg=self.Color, bg='black')
+        self.clock.pack(padx=(10,10), pady=(120,100))
 
         # Starting the tick loop
-        self.Tick()    
+        self.count = 40
+        self.Loop()    
 
     def config(self):
         # This function allows you to configure the clock
@@ -63,6 +71,7 @@ class Clock(object):
         self.config_window = tk.Toplevel()
         self.config_window.resizable(False, False)
         self.config_window.attributes("-topmost", True)
+        self.config_window.overrideredirect(1)
         self.config_window.title("Configuration de RaspiClock")
 
         x = (self.config_window.winfo_screenwidth() - self.config_window.winfo_reqwidth()) / 2
@@ -154,8 +163,19 @@ class Clock(object):
         else:
             self.CurrentTime = time.strftime('%H:%M:%S')
         self.clock['text'] = self.CurrentTime
-        self.NTP_check()
-        self.clock.after(300, self.Tick)
+
+    def net_check(self):
+        # This function checks for network status
+        try:
+            # connect to the host -- tells us if the host is actually
+            # reachable
+            socket.create_connection(("www.google.com", 80), timeout=20)
+            self.net_status.configure(text='Statut Réseau : OK', fg='green')
+            self.net = 'OK'
+            return True
+        except:
+            self.net_status.configure(text='Statut Réseau : Hors ligne', fg='red')
+            return False
     
     def NTP_check(self):
         # This function checks for NTP sync (works only with a raspberry for now)
@@ -168,21 +188,37 @@ class Clock(object):
                     for line in out.splitlines():
                         if re.search(r'Network time on: (.*)', line, re.I):
                             self.ntp_time = re.search(r'Network time on: (.*)', line, re.I)
+                            n_t = self.ntp_time.group(1).lower()
                         elif re.search(r'NTP synchronized: (.*)', line, re.I):
                             self.ntp_sync = re.search(r'NTP synchronized: (.*)', line, re.I)
-                    if self.ntp_time.group(1).lower() == 'yes' and self.ntp_sync.group(1).lower() == 'yes':
-                        self.ntp_status.configure(text='Statut NTP : OK', fg='green')
+                            n_s = self.ntp_sync.group(1).lower()
+                    if n_t == 'yes' and n_s == 'yes' and self.net == 'OK':
+                        self.ntp_status.configure(text='Sync NTP : OK', fg='green')
                     else:
-                        self.ntp_status.configure(text='Statut NTP : Free Run', fg='red')
+                        self.ntp_status.configure(text='Sync NTP : Free Run', fg='red')
                 else:
-                    # print("Unable to check NTP status.")
+                    print("Unable to check NTP status.")
                     return
             else:
-                # print("Unable to check NTP because not on linux system.")
+                print("Unable to check NTP because not on linux system.")
                 return
         except Exception as e:
-            # print("Error during NTP check action : {}").format(e)
+            print("Error during NTP check action : {}").format(e)
             return
+
+    def Loop(self):
+        # This function calls other function on a given interval
+        self.Tick()
+        if self.count == 0:
+            print('Checking NTP sync and network status')
+            self.net_check()
+            self.NTP_check()
+            self.count = 40
+            self.clock.after(100, self.Loop)
+        else:
+            self.count -= 1
+            self.clock.after(250, self.Loop)
+
 
 # Start the main app
 if __name__ == '__main__':
