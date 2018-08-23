@@ -55,14 +55,16 @@ class Clock(object):
         self.ntp_color='gray'
         self.ntp_text='Sync NTP : Inconnu'
         self.ntp_status = tk.Label(button_frame, text=self.ntp_text, font='Helvetica 12 bold', fg=self.ntp_color, bg='black')
-        self.ntp_status.pack(padx=(80,0), side='right')
+        self.ntp_status.pack(padx=(130,0), side='right')
 
         # Creating the clock layout
         self.clock = tk.Label(master=root, font = '"LCD AT&T Phone Time/Date" 170', fg=self.Color, bg='black')
-        self.clock.pack(padx=(10,10), pady=(120,100))
+        self.clock.pack(padx=(10,10), pady=(120))
 
         # Starting the tick loop
-        self.count = 40
+        self.Tick()
+
+        # Starting the ntp and network check loop
         self.Loop()    
 
     def config(self):
@@ -160,9 +162,16 @@ class Clock(object):
         # This function checks for time and launch ntp function every 300ms
         if self.SecondsChoice == 'Non':
             self.CurrentTime = time.strftime('%H:%M')
+            if self.clock['font'] != '"LCD AT&T Phone Time/Date" 260':
+                self.clock.configure(font= '"LCD AT&T Phone Time/Date" 260')
+                self.clock.pack(padx=(10,10), pady=(70))
         else:
             self.CurrentTime = time.strftime('%H:%M:%S')
+            if self.clock['font'] != '"LCD AT&T Phone Time/Date" 170':
+                self.clock.configure(font= '"LCD AT&T Phone Time/Date" 170')
+                self.clock.pack(padx=(10,10), pady=(120))
         self.clock['text'] = self.CurrentTime
+        self.clock.after(100, self.Tick)
 
     def net_check(self):
         # This function checks for network status
@@ -208,17 +217,9 @@ class Clock(object):
 
     def Loop(self):
         # This function calls other function on a given interval
-        self.Tick()
-        if self.count == 0:
-            print('Checking NTP sync and network status')
-            self.net_check()
-            self.NTP_check()
-            self.count = 40
-            self.clock.after(100, self.Loop)
-        else:
-            self.count -= 1
-            self.clock.after(250, self.Loop)
-
+        self.net_check()
+        self.NTP_check()
+        self.net_status.after(10000, self.Loop)
 
 # Start the main app
 if __name__ == '__main__':
