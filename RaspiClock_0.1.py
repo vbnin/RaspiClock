@@ -3,9 +3,11 @@
 
 """
 Développé par IP Echanges - VBNIN et CKAR
-Version : 0.1 
-Release date : 21/08/2018
+
 """
+
+version_text = 'Version 0.2 - 28/08/2018'
+print('This is RaspiClock - {}').format(version_text)
 
 # Import libraries
 import Tkinter as tk
@@ -58,14 +60,17 @@ class Clock(object):
         self.ntp_status.pack(padx=(130,0), side='right')
 
         # Creating the clock layout
+        self.clock_enable = False
         self.clock = tk.Label(master=root, font = '"LCD AT&T Phone Time/Date" 165', fg=self.Color, bg='black')
         self.clock.pack(padx=(8,8), pady=(120))
+
+        # Starting the ntp and network check loop
+        self.Loop() 
 
         # Starting the tick loop
         self.Tick()
 
-        # Starting the ntp and network check loop
-        self.Loop()    
+           
 
     def config(self):
         # This function allows you to configure the clock
@@ -130,7 +135,7 @@ class Clock(object):
         tk.Label(about_frame, text='Horloge synchronisée par NTP').pack()
         tk.Label(about_frame, text='Language : Python 2.7').pack()
         tk.Label(about_frame, text='Une application IP-Echanges pour France Télévisions').pack()
-        tk.Label(about_frame, text='Version 0.1 - 22/08/2018').pack()
+        tk.Label(about_frame, text=version_text).pack()
 
         tk.Button(about_frame, text='Fermer', height=1, width=6, default='active', command=self.click_fermer).pack(side='right')
 
@@ -160,24 +165,28 @@ class Clock(object):
 
     def Tick(self):
         # This function checks for time and launch ntp function every 300ms
-        if self.SecondsChoice == 'Non':
-            self.CurrentTime = time.strftime('%H:%M')
-            if self.clock['font'] != '"LCD AT&T Phone Time/Date" 260':
-                self.clock.configure(font= '"LCD AT&T Phone Time/Date" 260')
-                self.clock.pack(padx=(10,10), pady=(70))
+        if self.clock_enable == True:
+            if self.SecondsChoice == 'Non':
+                self.CurrentTime = time.strftime('%H:%M')
+                if self.clock['font'] != '"LCD AT&T Phone Time/Date" 260':
+                    self.clock.configure(font= '"LCD AT&T Phone Time/Date" 260')
+                    self.clock.pack(padx=(10,10), pady=(70))
+            else:
+                self.CurrentTime = time.strftime('%H:%M:%S')
+                if self.clock['font'] != '"LCD AT&T Phone Time/Date" 165':
+                    self.clock.configure(font= '"LCD AT&T Phone Time/Date" 165')
+                    self.clock.pack(padx=(8,8), pady=(120))
+            self.clock['text'] = self.CurrentTime
         else:
-            self.CurrentTime = time.strftime('%H:%M:%S')
-            if self.clock['font'] != '"LCD AT&T Phone Time/Date" 165':
-                self.clock.configure(font= '"LCD AT&T Phone Time/Date" 165')
-                self.clock.pack(padx=(8,8), pady=(120))
-        self.clock['text'] = self.CurrentTime
+            self.clock.configure(font= 'System 70 bold')
+            self.clock.pack(padx=(8,8), pady=(120))
+            self.clock['text'] = 'Vérification réseau et NTP en cours'
         self.clock.after(100, self.Tick)
 
     def net_check(self):
         # This function checks for network status
         try:
-            # connect to the host -- tells us if the host is actually
-            # reachable
+            # connect to the host -- tells us if the host is actually reachable
             socket.create_connection(("www.google.com", 80), timeout=20)
             self.net_status.configure(text='Statut Réseau : OK', fg='green')
             self.net = 'OK'
@@ -203,22 +212,25 @@ class Clock(object):
                             n_s = self.ntp_sync.group(1).lower()
                     if n_t == 'yes' and n_s == 'yes' and self.net == 'OK':
                         self.ntp_status.configure(text='Sync NTP : OK', fg='green')
+                        return True
                     else:
                         self.ntp_status.configure(text='Sync NTP : Free Run', fg='red')
+                        return False
                 else:
                     print("Unable to check NTP status.")
-                    return
+                    return False
             else:
                 print("Unable to check NTP because not on linux system.")
-                return
+                self.ntp_status.configure(text='Sync NTP : Non vérifiable', fg='gray')
+                return False
         except Exception as e:
             print("Error during NTP check action : {}").format(e)
-            return
+            return False
 
     def Loop(self):
         # This function calls other function on a given interval
-        self.net_check()
-        self.NTP_check()
+        if self.net_check() is True and self.NTP_check() is True:
+            self.clock_enable = True
         self.net_status.after(10000, self.Loop)
 
 # Start the main app
