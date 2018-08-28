@@ -178,9 +178,11 @@ class Clock(object):
                     self.clock.pack(padx=(8,8), pady=(120))
             self.clock['text'] = self.CurrentTime
         else:
-            self.clock.configure(font= 'System 70 bold')
-            self.clock.pack(padx=(8,8), pady=(120))
-            self.clock['text'] = 'Vérification réseau et NTP en cours'
+            self.clock.configure(font= 'System 60 bold')
+            self.clock.pack(padx=(8,8), pady=(80))
+            self.clock['text'] = '''Vérification
+réseau et NTP
+en cours...'''
         self.clock.after(100, self.Tick)
 
     def net_check(self):
