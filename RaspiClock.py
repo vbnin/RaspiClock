@@ -37,32 +37,37 @@ class Clock(object):
 
         # Frame containing main buttons
         button_frame = tk.Frame(master=root, bg='black')
-        button_frame.pack(padx=10, pady=10, anchor='n')
-        tk.Button(button_frame,
-         text='Configurer',
-          font='Helvetica 12 bold',
-           height=1, width=11,
-            command=self.config,
-             bg='black',
-              fg='gray',
-               bd=1,
-                highlightbackground='black',
-                 activebackground='gray').pack(side='left')
+        button_frame.pack(padx=10, pady=10, fill='both', anchor='n')
+        self.conf = tk.Button(button_frame,
+            text='Config (F1)',
+            font='Helvetica 10 bold',
+            height=1, width=8,
+            command=lambda: self.config(),
+            bg='black',
+            fg='#202020',
+            bd=1,
+            highlightbackground='black',
+
+            highlightcolor='#202020',
+            activebackground='#202020')
+        self.conf.pack(side='left')
+        
+        
 
         self.net_color='gray'
         self.net_text='Statut Réseau : Inconnu'
         self.net_status = tk.Label(button_frame, text=self.net_text, font='Helvetica 12 bold', fg=self.net_color, bg='black')
-        self.net_status.pack(padx=(30,0), side='right')
+        self.net_status.pack(padx=(160,0), side='left')
 
         self.ntp_color='gray'
         self.ntp_text='Sync NTP : Inconnu'
         self.ntp_status = tk.Label(button_frame, text=self.ntp_text, font='Helvetica 12 bold', fg=self.ntp_color, bg='black')
-        self.ntp_status.pack(padx=(130,0), side='right')
+        self.ntp_status.pack(padx=(30,0), side='left')
 
         # Creating the clock layout
         self.clock_enable = False
         self.clock = tk.Label(master=root, font = '"LCD AT&T Phone Time/Date" 165', fg=self.Color, bg='black')
-        self.clock.pack(padx=(8,8), pady=(120))
+        self.clock.pack(padx=10, pady=120)
 
         # Starting the ntp and network check loop
         self.Loop() 
@@ -71,14 +76,15 @@ class Clock(object):
         self.Tick()
 
            
-
-    def config(self):
+    def config(self, event=None):
         # This function allows you to configure the clock
         # Opening popup window
+        root.configure(cursor='arrow')
         self.config_window = tk.Toplevel()
         self.config_window.resizable(False, False)
         self.config_window.attributes("-topmost", True)
         self.config_window.overrideredirect(1)
+        self.config_window.focus_set()
         self.config_window.title("Configuration de RaspiClock")
 
         x = (self.config_window.winfo_screenwidth() - self.config_window.winfo_reqwidth()) / 2
@@ -141,6 +147,7 @@ class Clock(object):
 
     def click_fermer(self):
         # This function closes the about window
+        root.configure(cursor='none')
         self.about_window.destroy()
 
     def click_valider(self):
@@ -153,6 +160,7 @@ class Clock(object):
         with open(ConfigFile, 'w') as f:
             f.writelines(self.Color + '\n')
             f.writelines(self.SecondsChoice)
+        root.configure(cursor='none')
         self.config_window.destroy()
 
     def click_retour(self):
@@ -170,16 +178,16 @@ class Clock(object):
                 self.CurrentTime = time.strftime('%H:%M')
                 if self.clock['font'] != '"LCD AT&T Phone Time/Date" 260':
                     self.clock.configure(font= '"LCD AT&T Phone Time/Date" 260')
-                    self.clock.pack(padx=(10,10), pady=(70))
+                    self.clock.pack(padx=10, pady=70, side='left')
             else:
                 self.CurrentTime = time.strftime('%H:%M:%S')
                 if self.clock['font'] != '"LCD AT&T Phone Time/Date" 165':
                     self.clock.configure(font= '"LCD AT&T Phone Time/Date" 165')
-                    self.clock.pack(padx=(8,8), pady=(120))
+                    self.clock.pack(padx=10, pady=120, side='left')
             self.clock['text'] = self.CurrentTime
         else:
             self.clock.configure(font= 'System 60 bold')
-            self.clock.pack(padx=(8,8), pady=(80))
+            self.clock.pack(padx=10, pady=80)
             self.clock['text'] = '''Vérification
 réseau et NTP
 en cours...'''
@@ -248,4 +256,5 @@ if __name__ == '__main__':
     root.attributes("-topmost", True)
     root.focus_force()
     root.configure(bg='black', cursor='none')
+    root.bind('<F1>', lambda e: app.config()) 
     root.mainloop()
