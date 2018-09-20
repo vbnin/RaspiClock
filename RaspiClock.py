@@ -3,7 +3,7 @@
 
 """
 Développé par IP Echanges - VBNIN et CKAR
-
+This is a simple NTP customizable clock displaying full screen for TV offices
 """
 
 version_text = 'Version 0.3 - 20/09/2018'
