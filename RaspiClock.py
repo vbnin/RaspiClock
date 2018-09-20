@@ -2,8 +2,9 @@
 # coding: utf-8
 
 """
-Développé par IP Echanges - VBNIN et CKAR
+Programmed by IP Echanges - VBNIN et CKAR
 This is a simple NTP customizable clock displaying full screen for TV offices
+Warning : The clock layout is made for 7" Raspberry Screens. It won't display correctly elsewhere
 """
 
 version_text = 'Version 0.3 - 20/09/2018'
@@ -220,9 +221,9 @@ class Clock(object):
                     self.clock.pack(padx=10, pady=70, side='left')
             else:
                 self.CurrentTime = time.strftime('%H:%M:%S')
-                if self.clock['font'] != '"LCD AT&T Phone Time/Date" 165':
-                    self.clock.configure(font= '"LCD AT&T Phone Time/Date" 165')
-                    self.clock.pack(padx=10, pady=120, side='left')
+                if self.clock['font'] != '"LCD AT&T Phone Time/Date" 162':
+                    self.clock.configure(font= '"LCD AT&T Phone Time/Date" 162')
+                    self.clock.pack(padx=(10, 0), pady=120, side='left')
             self.clock['text'] = self.CurrentTime
         else:
             self.clock.configure(font= 'System 60 bold')
