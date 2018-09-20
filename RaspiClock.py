@@ -153,7 +153,6 @@ class Clock(object):
         self.about_window = tk.Toplevel()
         self.about_window.resizable(False, False)
         self.about_window.attributes("-topmost", True)
-        self.config_window.overrideredirect(1)
         self.about_window.title("A propos de RaspiClock")
 
         x = (self.about_window.winfo_screenwidth() - self.about_window.winfo_reqwidth()) / 2
